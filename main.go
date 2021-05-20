@@ -34,27 +34,15 @@ func cityHandler(cityData map[string]int, mtx *sync.Mutex) http.HandlerFunc {
 }
 
 func get(data map[string]int, r *http.Request) (string, int) {
-// проверка наличия ключа
 
-		//итерация по мапе
-		/*for city, freq := range data {
-			fmt.Fprintf(w, "%s %d times\n", city, freq)
-		}*/
 		var result string
 		for city, freq := range data {
-			result=result+fmt.Sprintf("%v %d times\n", city, freq)
+			if freq >=2 && freq <=4 || (freq > 21 && (freq % 10 >=2) && freq % 10 <=4 ){
+				result=result+fmt.Sprintf("%v - %d раза\n", city, freq)
+			} else {
+				result=result+fmt.Sprintf("%v - %d раз\n", city, freq)
+			}
 		}
-		//if city != "" {
-		//	return fmt.Sprintf("%s %d times", city, data[city]), http.StatusOK
-		//}
-
-
-	// otherwise it prints all the data
-	//result, err := json.Marshal(data)
-
-	/*if err != nil {
-		return err.Error(), http.StatusInternalServerError
-	}*/
 
 	return result, http.StatusOK
 }
@@ -63,8 +51,10 @@ func post(data map[string]int, r *http.Request) (string, int) {
 
 	city := r.URL.Query().Get("name")
 
+	if city == ""{
+		return "Error", http.StatusBadRequest
+	}
 	data[city]++
-	fmt.Println(city)
 
 	return "POST Done", http.StatusCreated
 }
