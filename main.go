@@ -56,7 +56,6 @@ func post(data map[string]int, r *http.Request,mtx *sync.Mutex) (string, int) {
 	}
 
 	mtx.Lock()
-	//defer mtx.Unlock()
 	data[city]++
 	mtx.Unlock()
 
