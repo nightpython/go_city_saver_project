@@ -8,17 +8,15 @@ import (
 
 func cityHandler(cityData map[string]int, mtx *sync.Mutex) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		mtx.Lock()
-		defer mtx.Unlock()
 
 		var result string
 		var statusCode int
 
 		switch r.Method {
 		case http.MethodGet:
-			result, statusCode = get(cityData, r)
+			result, statusCode = get(cityData, r,mtx)
 		case http.MethodPost:
-			result, statusCode = post(cityData, r)
+			result, statusCode = post(cityData, r, mtx)
 		default:
 			result = "Invalid request method"
 			statusCode = http.StatusMethodNotAllowed
@@ -33,9 +31,10 @@ func cityHandler(cityData map[string]int, mtx *sync.Mutex) http.HandlerFunc {
 	}
 }
 
-func get(data map[string]int, r *http.Request) (string, int) {
+func get(data map[string]int, r *http.Request,mtx *sync.Mutex) (string, int) {
 
 		var result string
+		mtx.Lock()
 		for city, freq := range data {
 			if freq >=2 && freq <=4 || (freq > 21 && (freq % 10 >=2) && freq % 10 <=4 ){
 				result=result+fmt.Sprintf("%v - %d раза\n", city, freq)
@@ -43,18 +42,23 @@ func get(data map[string]int, r *http.Request) (string, int) {
 				result=result+fmt.Sprintf("%v - %d раз\n", city, freq)
 			}
 		}
+		mtx.Unlock()
 
 	return result, http.StatusOK
 }
 
-func post(data map[string]int, r *http.Request) (string, int) {
+func post(data map[string]int, r *http.Request,mtx *sync.Mutex) (string, int) {
 
 	city := r.URL.Query().Get("name")
 
 	if city == ""{
 		return "Error", http.StatusBadRequest
 	}
+
+	mtx.Lock()
+	//defer mtx.Unlock()
 	data[city]++
+	mtx.Unlock()
 
 	return "POST Done", http.StatusCreated
 }
